@@ -1,132 +1,176 @@
 #include <ncurses.h>
 #include <unistd.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main()
 {
-    int x = 10; //starting positone of the snake head on x
-    int y = 10; //starting positone of the snake head on y
-    int ch; //stores the keyboard input
-    int max_x;  //max terminal width
-    int max_y;  //max terminal height
-    int food_x; //food position x axis
-    int food_y; //food position y axis
-    int food_exists = 0;    //if food is on screen
-    
-    srand(time(NULL));
+    int snake_x[500];   //snake position x-axis
+    int snake_y[500];   //snake position y-axis
+    int snake_length = 3;   //starting snake length
+    int ch; //holds the key input
+    int max_x;  //max screen size on the x-axis
+    int max_y;  //max screen size on the y-axis
+    int direction = 3;  //this starts the snake moving towards the right
+    int food_x; //food position on the x-axis
+    int food_y; //food position on the x-axis
+    int food_exists = 0;    //if the food currently exits
 
-    initscr();  //initialized the screen, starts ncurses
-    noecho();   //stops typed characters from being shown on screen
-    cbreak();   //gets input
-    keypad(stdscr, TRUE);   //allows special keys
+    srand(time(NULL));  //seeds random nummbers
 
-    getmaxyx(stdscr, max_y, max_x); //gets the height and width of the window
+    initscr();  //starts ncurses
+    noecho();   //stops echoing keys
+    cbreak();   //instantaneous key input
+    keypad(stdscr, TRUE);   //enables special keys
 
-    //while loop for the main game
-    while(1)
+    getmaxyx(stdscr, max_y, max_x); //this gets the size of the terminal
+
+    //starts snake in center
+    snake_x[0] = max_x / 2;
+    snake_y[0] = max_y / 2;
+
+    for(int i = 1; i < snake_length; i++) 
     {
-        clear();    //fresh state of the game
+        snake_x[i] = snake_x[0] - i;
+        snake_y[i] = snake_y[0];
+    }
 
-        //draws the top and bottom border frames of play area
-        for(int i = 0; i<max_x; i++)
+
+    //loop for the game
+    while (1)
+    {
+        clear();
+
+        //draws the borders for the top and bottom of the play area
+        for (int i = 0; i < max_x; i++) 
         {
-            move(0,i);
-            addch('#');
-
-            move(max_y - 1,i);
-            addch('#');
+            move(0, i); addch('#');
+            move(max_y - 1, i); addch('#');
         }
 
-        //draws the left and right border frames of play area
-        for(int i = 0; i<max_y; i++)
+        //draws the borders for the left and right sides of the play area
+        for (int i = 0; i < max_y; i++) 
         {
-            move(i,0);
-            addch('#');
-
-            move(i, max_x -1);
-            addch('#');
+            move(i, 0); addch('#');
+            move(i, max_x - 1); addch('#');
         }
 
-        move(0,2);  //cursor starts at the top left of the frame
-        addstr("Snake Game (WASD to move, q to quit)"); //displays game name and instructions
+        //draws instructions
+        move(0, 2);
+        addstr("Snake Game (WASD to move, q to quit)");
 
-
-        //spwans food into within play field if food is not existing
-        if(!food_exists)
+        //spawns food
+        if (!food_exists) 
         {
             food_x = (rand() % (max_x - 2)) + 1;
             food_y = (rand() % (max_y - 2)) + 1;
             food_exists = 1;
         }
 
-        move(food_y, food_x);   //cursor moves to place food
-        addch('*'); //draws the food
+        //draws food
+        move(food_y, food_x);
+        addch('*');
 
-        move(y,x);  //cursor moves to place the head of the snake position
-        addstr("@");    //draws the head of the snake
-
-        refresh();  //update the terminal with new state
-
-        ch = getch();   //waits for keyboard input
-
-        //quits game if 'q' is pressed
-        if(ch=='q')
+        //draws the snake
+        for (int i = 0; i < snake_length; i++) 
         {
-            break;
+            move(snake_y[i], snake_x[i]);
+
+            if(i==0)
+            {
+                addch('@'); //adds head
+            }
+
+            else
+            {
+                addch('O');;    //adds body
+            }
+            
         }
 
-        //moves snake up
-        if(ch == 'w')
+        refresh();  //updates screen
+
+        //player's input
+        ch = getch();
+        if (ch == 'q') break;
+
+        if (ch == 'w' && direction != 1)
         {
-            y--;
+            direction = 0;  //sets direction to up
         }
 
-        //moves snake left
-        if(ch == 'a')
+        if (ch == 's' && direction != 0)
         {
-            x--;
+            direction = 1;  //sets direction to down
         }
-
-        //moves snake down
-        if(ch == 's')
-        {
-            y++;
-        }
-
-        //moves snake right
-        if(ch == 'd')
-        {
-            x++;
-        }
-
-        //keeps snake within the borders
-        if(x<=1)
-        {
-            x=1;
-        }
-        if(x>=max_x -2)
-        {
-            x=max_x -2;
-        }
-        if(y<=1)
-        {
-            y=1;
-        }
-        if(y>=max_y -2)
-        {
-            y=max_y -2;
-        }
-
-        //checks if snake has eaten food
-        if(x == food_x && y == food_y)
-        {
-            food_exists = 0;    //causes food to spawn in next loop
-        }
-
         
+        if (ch == 'a' && direction != 3)
+        {
+            direction = 2;  //sets direction to left
+        }
+
+        if (ch == 'd' && direction != 2)
+        {
+            direction = 3;  //sets direction to right 
+        }
+
+        //moves body segments
+        for (int i = snake_length - 1; i > 0; i--) 
+        {
+            snake_x[i] = snake_x[i - 1];    
+            snake_y[i] = snake_y[i - 1];
+        }
+
+        //moves the snake's head
+        if (direction == 0)
+        {
+            snake_y[0]--;   //moves snake's head up
+        } 
+
+        if (direction == 1)
+        {
+            snake_y[0]++;   //moves snake's head down
+        }
+
+        if (direction == 2)
+        {
+            snake_x[0]--;   //moves snake's head left
+        }
+
+        if (direction == 3)
+        {
+            snake_x[0]++;   //moves snake's head right
+        }
+
+        //handles collision with walls
+        if (snake_x[0] <= 0 || snake_x[0] >= max_x - 1 || snake_y[0] <= 0 || snake_y[0] >= max_y - 1)
+        {
+            endwin();   //closes ncurses
+            printf("GAME OVER\n");  //prints message
+            return 0;   //exits
+        }
+
+        //handles collision with itself
+        for (int i = 1; i < snake_length; i++) 
+        {
+            if (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]) 
+            {
+                endwin();   //closes ncurses
+                printf("GAME OVER\n");  //prints message
+                return 0;   //exits
+            }
+        }
+
+        //handles eating food
+        if (snake_x[0] == food_x && snake_y[0] == food_y) 
+        {
+            snake_length++; //snake grows 
+            food_exists = 0;    //respawns the food
+        }
+
+        usleep(120000); //speed control
     }
-    
-    endwin();   //ends the ncurses and returns to normal terminal
-    return 0;   //returns 0 and ends program
+
+    endwin();
+    return 0;
 }
