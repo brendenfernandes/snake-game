@@ -22,8 +22,28 @@ int main()
     noecho();   //stops echoing keys
     cbreak();   //instantaneous key input
     keypad(stdscr, TRUE);   //enables special keys
+    curs_set(0);    //hides the cursor
 
     getmaxyx(stdscr, max_y, max_x); //this gets the size of the terminal
+
+    clear();
+
+    //title screen
+    move(max_y/2 - 6, (max_x/2) - 19); addstr(" ####   #    #    ##    #   #  ######");
+    move(max_y/2 - 5, (max_x/2) - 19); addstr("#       ##   #   #  #   #  #   #     ");
+    move(max_y/2 - 4, (max_x/2) - 19); addstr("#       # #  #  #    #  # #    #     ");
+    move(max_y/2 - 3, (max_x/2) - 19); addstr(" ###    #  # #  ######  #      ##### ");
+    move(max_y/2 - 2, (max_x/2) - 19); addstr("    #   #   ##  #    #  # #    #     ");
+    move(max_y/2 - 1, (max_x/2) - 19); addstr("     #  #    #  #    #  #  #   #     ");
+    move(max_y/2 + 0, (max_x/2) - 19); addstr("####    #    #  #    #  #   #  ######");
+
+    move(max_y/2 + 2, (max_x/2) - 10);
+    addstr("Press any key to start");
+
+    refresh();
+    getch();    //waits for user to enter key to start gam
+    clear();
+
 
     //starts snake in center
     snake_x[0] = max_x / 2;
@@ -91,8 +111,13 @@ int main()
         refresh();  //updates screen
 
         //player's input
+        nodelay(stdscr, TRUE);
         ch = getch();
-        if (ch == 'q') break;
+
+        if (ch == 'q')
+        {
+            break;  //break statement to exit game loop
+        }
 
         if (ch == 'w' && direction != 1)
         {
