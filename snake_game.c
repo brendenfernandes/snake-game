@@ -26,6 +26,15 @@ int main()
 
     getmaxyx(stdscr, max_y, max_x); //this gets the size of the terminal
 
+    if(max_y < 20 || max_x < 20)
+    {
+        endwin();
+        printf("ERROR: Terminal window must be at least 20x20.\n");
+        return 1;
+    }
+
+    int win_length = (2 * (max_x + max_y)) / 2;
+
     clear();
 
     //title screen
@@ -184,6 +193,19 @@ int main()
                 printf("GAME OVER\n");  //prints message
                 return 0;   //exits
             }
+        }
+
+        //win condition check
+        if(snake_length >= win_length)
+        {
+            nodelay(stdscr, FALSE);
+            clear();
+            mvprintw(max_y/2, (max_x/2)-4, "YOU WIN!");
+            mvprintw(max_y/2 + 2, (max_x/2)-11, "Press any key to exit.");
+            refresh();
+            getch();
+            endwin();
+            return 0;
         }
 
         //handles eating food
