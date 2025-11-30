@@ -2,12 +2,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 int main()
 {
-    int snake_x[500];   //snake position x-axis
-    int snake_y[500];   //snake position y-axis
+    int snake_x[500];   //array for snake position x-axis
+    int snake_y[500];   //array for snake position y-axis
     int snake_length = 3;   //starting snake length
+    int score = 0;  //holds score
     int ch; //holds the key input
     int max_x;  //max screen size on the x-axis
     int max_y;  //max screen size on the y-axis
@@ -24,8 +26,20 @@ int main()
     keypad(stdscr, TRUE);   //enables special keys
     curs_set(0);    //hides the cursor
 
-    getmaxyx(stdscr, max_y, max_x); //this gets the size of the terminal
+    //setup for colors
+    if(has_colors())
+    {
+        start_color();
+        use_default_colors();
 
+        init_pair(1, COLOR_GREEN, -1);  //snake color
+        init_pair(2, COLOR_YELLOW, -1); //food color
+        init_pair(3, COLOR_RED, -1);    //border color
+    }
+
+    getmaxyx(stdscr, max_y, max_x); //gets the size of the terminal
+
+    //ensures minimum terminal window size is 20 x 20
     if(max_y < 20 || max_x < 20)
     {
         endwin();
@@ -33,6 +47,7 @@ int main()
         return 1;
     }
 
+    //win condition (half the border's size)
     int win_length = (2 * (max_x + max_y)) / 2;
 
     clear();
@@ -46,6 +61,7 @@ int main()
     move(max_y/2 - 1, (max_x/2) - 19); addstr("     #  #    #  #    #  #  #   #     ");
     move(max_y/2 + 0, (max_x/2) - 19); addstr("####    #    #  #    #  #   #  ######");
 
+    //press any key input to start game
     move(max_y/2 + 2, (max_x/2) - 10);
     addstr("Press any key to start");
 
@@ -58,6 +74,7 @@ int main()
     snake_x[0] = max_x / 2;
     snake_y[0] = max_y / 2;
 
+    //positions the body of the snake behind the head
     for(int i = 1; i < snake_length; i++) 
     {
         snake_x[i] = snake_x[0] - i;
@@ -73,20 +90,36 @@ int main()
         //draws the borders for the top and bottom of the play area
         for (int i = 0; i < max_x; i++) 
         {
-            move(0, i); addch('#');
-            move(max_y - 1, i); addch('#');
+            attron(COLOR_PAIR(3));
+            move(0, i); 
+            addch('#');
+            move(max_y - 1, i); 
+            addch('#');
+            attroff(COLOR_PAIR(3));
         }
 
         //draws the borders for the left and right sides of the play area
         for (int i = 0; i < max_y; i++) 
         {
-            move(i, 0); addch('#');
-            move(i, max_x - 1); addch('#');
+            attron(COLOR_PAIR(3));
+            move(i, 0); 
+            addch('#');
+            move(i, max_x - 1); 
+            addch('#');
+            attroff(COLOR_PAIR(3));
         }
 
         //draws instructions
-        move(0, 2);
-        addstr("Snake Game (WASD to move, q to quit)");
+        const char* instructions = "Snake Game (WASD to move, q to quit)";
+        move(0, (max_x - strlen(instructions)) / 2);
+        addstr(instructions);
+
+        //draw score
+        char score_text[32];
+        sprintf(score_text, "Score: %d", score);
+
+        move(max_y - 1, (max_x - strlen(score_text)) / 2);
+        addstr(score_text);
 
         //spawns food
         if (!food_exists) 
@@ -97,14 +130,17 @@ int main()
         }
 
         //draws food
+        attron(COLOR_PAIR(2));
         move(food_y, food_x);
         addch('*');
+        attroff(COLOR_PAIR(2));
 
         //draws the snake
         for (int i = 0; i < snake_length; i++) 
         {
             move(snake_y[i], snake_x[i]);
 
+            attron(COLOR_PAIR(1));
             if(i==0)
             {
                 addch('@'); //adds head
@@ -114,6 +150,7 @@ int main()
             {
                 addch('O');;    //adds body
             }
+            attroff(COLOR_PAIR(1));
             
         }
 
@@ -212,6 +249,7 @@ int main()
         if (snake_x[0] == food_x && snake_y[0] == food_y) 
         {
             snake_length++; //snake grows 
+            score++;    //increment score after each food eaten
             food_exists = 0;    //respawns the food
         }
 
