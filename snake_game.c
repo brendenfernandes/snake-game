@@ -17,7 +17,8 @@ int main()
     int food_x; //food position on the x-axis
     int food_y; //food position on the x-axis
     int food_exists = 0;    //if the food currently exits
-    int base_speed = 120000;
+    int base_speed = 120000;    //starting speed for every new game
+    int speed = 120000; //active speed when eating
     int paused = 0;     //pause flag
 
     srand(time(NULL));  //seeds random nummbers
@@ -280,9 +281,14 @@ int main()
                 snake_length++; //grows snake
                 score++;    //increment score
                 food_exists = 0;    //respawns food
+
+                if (speed > 4000)
+                {
+                    speed -= 4000;
+                }
             }
 
-            usleep(120000); //speed control
+            usleep(speed); //speed control
         }
 
         if(quit_game) 
@@ -316,6 +322,7 @@ int main()
                 score = 0;  //resets score
                 direction = 3;  //resets direction
                 food_exists = 0;    //clears food
+                speed = base_speed; //resets speed
                 break;  //restarts game
             }
         }
