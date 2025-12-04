@@ -35,10 +35,14 @@ int main()
         start_color();  //starts color mode
         use_default_colors();   //allows the transparent backgrounds
 
-        init_pair(1, COLOR_GREEN, -1);  //snake color
-        init_pair(2, COLOR_YELLOW, -1); //food color
-        init_pair(3, COLOR_RED, -1);    //border color
+        init_pair(1, COLOR_GREEN, COLOR_BLACK);  //snake color
+        init_pair(2, COLOR_YELLOW, COLOR_BLACK); //food color
+        init_pair(3, COLOR_RED, COLOR_BLACK);    //border color
+        init_pair(4, COLOR_BLACK, COLOR_BLACK); //background color
     }
+
+    bkgd(COLOR_PAIR(4));    //sets background color to black
+    refresh();  ///refresh screen
 
     getmaxyx(stdscr, max_y, max_x); //gets the size of the terminal
 
@@ -60,22 +64,42 @@ int main()
     {
         clear();    //clears screen
 
-        //title screen
-        move(max_y/2 - 6, (max_x/2) - 19); addstr(" ####   #    #    ##    #   #  ######");
-        move(max_y/2 - 5, (max_x/2) - 19); addstr("#       ##   #   #  #   #  #   #     ");
-        move(max_y/2 - 4, (max_x/2) - 19); addstr("#       # #  #  #    #  # #    #     ");
-        move(max_y/2 - 3, (max_x/2) - 19); addstr(" ###    #  # #  ######  #      ##### ");
-        move(max_y/2 - 2, (max_x/2) - 19); addstr("    #   #   ##  #    #  # #    #     ");
-        move(max_y/2 - 1, (max_x/2) - 19); addstr("     #  #    #  #    #  #  #   #     ");
-        move(max_y/2 + 0, (max_x/2) - 19); addstr("####    #    #  #    #  #   #  ######");
+        nodelay(stdscr, TRUE);  //non-blocking input for title screen
 
-        //press any key input to start game
-        move(max_y/2 + 2, (max_x/2) - 10);
-        addstr("Press any key to start");
+        int offsets[2] = { -2, 2 }; //animation for title screen
+        int frame = 0;  //frame counter for animation
 
-        refresh();  //updates display
-        getch();    //waits for user to enter key to start gam
-        clear();    //clear screen for gameplay
+        int key = ERR;  //stores key press
+        while(key == ERR)   //loops until key is pressed
+        {
+            clear();    //clears screen each frame
+            bkgd(COLOR_PAIR(4)); // black background
+
+            int offset = offsets[frame % 2];    //alternates the offset to simulate animation
+
+            attron(COLOR_PAIR(1));  //green color start
+            move(max_y/2 - 6, (max_x/2) - 19 + offset); addstr(" ####   #    #    ##    #   #  ######");
+            move(max_y/2 - 5, (max_x/2) - 19 + offset); addstr("#       ##   #   #  #   #  #   #     ");
+            move(max_y/2 - 4, (max_x/2) - 19 + offset); addstr("#       # #  #  #    #  # #    #     ");
+            move(max_y/2 - 3, (max_x/2) - 19 + offset); addstr(" ###    #  # #  ######  #      ##### ");
+            move(max_y/2 - 2, (max_x/2) - 19 + offset); addstr("    #   #   ##  #    #  # #    #     ");
+            move(max_y/2 - 1, (max_x/2) - 19 + offset); addstr("     #  #    #  #    #  #  #   #     ");
+            move(max_y/2 + 0, (max_x/2) - 19 + offset); addstr("####    #    #  #    #  #   #  ######");
+            attroff(COLOR_PAIR(1)); //ends green color
+
+            const char* msg = "Press any key to start";
+            attron(COLOR_PAIR(1));
+            mvaddstr(max_y/2 + 2, (max_x - strlen(msg))/2, msg);
+            attroff(COLOR_PAIR(1));
+
+            refresh();  //updates screen
+            usleep(120000); //waits for the next frame
+
+            key = getch();  //calls once per frame
+            frame++;    //increments frame count
+        }
+        nodelay(stdscr, FALSE);
+        clear();    //clears screen before gameplay
 
         //starts snake in center
         snake_x[0] = max_x / 2;
