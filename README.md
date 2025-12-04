@@ -1,2 +1,2 @@
 # snake-game
-Snake Game developed in terminal with C
+Snake Game developed in terminal with C. The objective of the game is to consume enough food to grow the snake to half the length of the border's perimeter (win condition). The snakes starts at a length of 3(1 head segment, 2 body segments), and moves at a predefined speed at the start. After each food is consumed, the snake grows in lenght and its speed is slightly increased. The game ends in a loss if the snake hits one of the walls(border) or collides with its own body.
